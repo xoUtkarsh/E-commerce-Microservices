@@ -3,6 +3,18 @@ spring:
     mongodb:
       connection-string: mongodb://localhost:27017
       database: userdb
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/userdb
 #    username: xoUtkarsh

@@ -1,14 +1,27 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/order
-    username: xoUtkarsh
-    password: 123456
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   jpa:
     database: POSTGRESQL
     show-sql: true
     hibernate:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 #  h2:
 #    console:
 #      enabled: true
