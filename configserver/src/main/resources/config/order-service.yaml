@@ -22,6 +22,10 @@ management:
       exposure:
         include: "*"
 
+  tracing:
+    sampling:
+      probability: 1.0
+
 server:
   port: 8083
 

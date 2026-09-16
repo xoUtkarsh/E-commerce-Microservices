@@ -15,6 +15,10 @@ management:
     web:
       exposure:
         include: "*"
+
+  tracing:
+    sampling:
+      probability: 1.0
 #  datasource:
 #    url: jdbc:postgresql://localhost:5432/userdb
 #    username: xoUtkarsh

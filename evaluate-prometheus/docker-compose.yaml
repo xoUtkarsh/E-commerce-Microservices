@@ -50,7 +50,7 @@ services:
     volumes:
       - ./logging/alloy-local-config.yaml:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - ../../logs:/logs-parent:ro
+      - ../logs:/logs-parent:ro
     command:  run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     ports:
       - 12345:12345
@@ -229,5 +229,13 @@ services:
   flog:
     image: mingrammer/flog
     command: -f json -d 200ms -l
+    networks:
+      - loki
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411
     networks:
       - loki
