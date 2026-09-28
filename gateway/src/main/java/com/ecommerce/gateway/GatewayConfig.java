@@ -5,6 +5,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import reactor.core.publisher.Mono;
 
 @Configuration
@@ -17,12 +18,16 @@ public class GatewayConfig {
 
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder){
-        System.out.println("Hello check");
         return builder.routes()
-                .route("product-service",r->
+                .route("product-service", r ->
                         r.path("/products/**")
-                                .filters(f->f.rewritePath("/products(?<segment>/?.*)",
-                                        "/api/products${segment}"))
+                                .filters(f -> f.retry(retryConfig -> retryConfig
+                                                .setRetries(10)
+                                                .setMethods(HttpMethod.GET)
+                                        )
+                                        .circuitBreaker(config -> config
+                                                .setName("ecomBreaker").setFallbackUri("forward:/fallback/products"))
+                                        .rewritePath("/products(?<segment>/?.*)", "/api/products${segment}"))
                                 .uri("lb://PRODUCT-SERVICE"))
                 .route("user-service",r->
                         r.path("/users/**")
