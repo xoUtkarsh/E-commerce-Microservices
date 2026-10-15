@@ -1,5 +1,6 @@
 package com.ecommerce.order.services;
 
+import com.ecommerce.order.dto.OrderCreatedEvent;
 import com.ecommerce.order.dto.OrderItemDTO;
 import com.ecommerce.order.dto.OrderResponse;
 import com.ecommerce.order.models.CartItem;
@@ -9,18 +10,21 @@ import com.ecommerce.order.models.OrderStatus;
 import com.ecommerce.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
-    private final CartService cartService;
 
+    private final CartService cartService;
     private final OrderRepository orderRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     public Optional<OrderResponse> createOrder(String userId) {
         // Validate for cart items
@@ -63,8 +67,30 @@ public class OrderService {
 
         // Clear the cart
         cartService.clearCart(userId);
+        OrderCreatedEvent event=new OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getStatus(),
+                mapToOrderItemDTOs(savedOrder.getItems()),
+                savedOrder.getTotalAmount(),
+                savedOrder.getCreatedAt()
+        );
+
+        rabbitTemplate.convertAndSend("order.exchange","order.tracking",
+                Map.of("orderId",savedOrder.getId(),"status","CREATED"));
 
         return Optional.of(mapToOrderResponse(savedOrder));
+    }
+
+    private List<OrderItemDTO> mapToOrderItemDTOs(List<OrderItem> items){
+        return items.stream()
+                .map(item -> new OrderItemDTO(
+                        item.getId(),
+                        item.getProductId(),
+                        item.getQuantity(),
+                        item.getPrice(),
+                        item.getPrice().multiply(new BigDecimal(item.getQuantity()))
+                )).toList();
     }
 
     private OrderResponse mapToOrderResponse(Order order) {
