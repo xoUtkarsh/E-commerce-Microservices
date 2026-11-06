@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class User {
     @Id
     private String id;
+    private String keyCloakId;
     private String firstName;
     private String lastName;
 
